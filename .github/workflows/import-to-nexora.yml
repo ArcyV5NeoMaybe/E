@@ -1,0 +1,33 @@
+name: Import source into private NEXORA repository
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout CaramelClient fork
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          submodules: recursive
+          lfs: true
+
+      - name: Push source branch to private NEXORA repository
+        env:
+          NEXORA_PUSH_TOKEN: ${{ secrets.NEXORA_PUSH_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${NEXORA_PUSH_TOKEN}" ]; then
+            echo "Missing repository secret NEXORA_PUSH_TOKEN"
+            exit 1
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote add nexora "https://x-access-token:${NEXORA_PUSH_TOKEN}@github.com/ArcyV5NeoMaybe/NEXORA-Client-.git"
+          git push --force nexora HEAD:refs/heads/upstream/caramelclient
