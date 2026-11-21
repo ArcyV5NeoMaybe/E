@@ -41,7 +41,8 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           AUTH_HEADER=$(printf 'x-access-token:%s' "${NEXORA_PUSH_TOKEN}" | base64 -w0)
           DESTINATION="https://github.com/ArcyV5NeoMaybe/NEXORA-Client-.git"
+          git config --local --replace-all http.https://github.com/.extraheader "AUTHORIZATION: basic ${AUTH_HEADER}"
           echo "Checking Git HTTPS access..."
-          git -c http.https://github.com/.extraheader="AUTHORIZATION: basic ${AUTH_HEADER}" ls-remote "${DESTINATION}" HEAD
+          git ls-remote "${DESTINATION}" HEAD
           echo "Pushing source branch..."
-          git -c http.https://github.com/.extraheader="AUTHORIZATION: basic ${AUTH_HEADER}" push --force "${DESTINATION}" HEAD:refs/heads/upstream/caramelclient
+          git push --force "${DESTINATION}" HEAD:refs/heads/upstream/caramelclient
