@@ -27,6 +27,14 @@ jobs:
             echo "Missing repository secret NEXORA_PUSH_TOKEN"
             exit 1
           fi
+          TOKEN_USER=$(curl -fsS -H "Authorization: Bearer ${NEXORA_PUSH_TOKEN}" -H "Accept: application/vnd.github+json" https://api.github.com/user | jq -r .login)
+          echo "Authenticated token account: ${TOKEN_USER}"
+          REPO_STATUS=$(curl -sS -o /tmp/nexora-repo.json -w "%{http_code}" -H "Authorization: Bearer ${NEXORA_PUSH_TOKEN}" -H "Accept: application/vnd.github+json" https://api.github.com/repos/ArcyV5NeoMaybe/NEXORA-Client-)
+          echo "Destination repository access HTTP: ${REPO_STATUS}"
+          if [ "${REPO_STATUS}" != "200" ]; then
+            jq -r .message /tmp/nexora-repo.json
+            exit 1
+          fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git remote add nexora "https://x-access-token:${NEXORA_PUSH_TOKEN}@github.com/ArcyV5NeoMaybe/NEXORA-Client-.git"
