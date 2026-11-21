@@ -35,7 +35,13 @@ jobs:
             jq -r .message /tmp/nexora-repo.json
             exit 1
           fi
+          TOKEN_SCOPES=$(curl -sSI -H "Authorization: Bearer ${NEXORA_PUSH_TOKEN}" https://api.github.com/user | tr -d '\r' | awk -F': ' 'tolower($1)=="x-oauth-scopes" {print $2}')
+          echo "Token OAuth scopes: ${TOKEN_SCOPES:-not reported}"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git remote add nexora "https://x-access-token:${NEXORA_PUSH_TOKEN}@github.com/ArcyV5NeoMaybe/NEXORA-Client-.git"
-          git push --force nexora HEAD:refs/heads/upstream/caramelclient
+          AUTH_HEADER=$(printf 'x-access-token:%s' "${NEXORA_PUSH_TOKEN}" | base64 -w0)
+          DESTINATION="https://github.com/ArcyV5NeoMaybe/NEXORA-Client-.git"
+          echo "Checking Git HTTPS access..."
+          git -c http.https://github.com/.extraheader="AUTHORIZATION: basic ${AUTH_HEADER}" ls-remote "${DESTINATION}" HEAD
+          echo "Pushing source branch..."
+          git -c http.https://github.com/.extraheader="AUTHORIZATION: basic ${AUTH_HEADER}" push --force "${DESTINATION}" HEAD:refs/heads/upstream/caramelclient
